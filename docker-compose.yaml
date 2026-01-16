@@ -1,0 +1,20 @@
+services:
+  app_customers:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app_customers
+    env_file:
+      - .env
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    volumes:
+      - .:/app
+    networks:
+      - app_network
+    command: ["./scripts/start.dev.sh"]
+
+networks:
+  app_network:
+    driver: bridge
+    name: app_network

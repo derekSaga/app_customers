@@ -1,0 +1,25 @@
+[project]
+name = "app-customers"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "derekSaga",email = "derek.coelho@outlook.com.br"}
+]
+readme = "README.md"
+requires-python = ">=3.13.5, <=3.14.2"
+dependencies = [
+    "fastapi (>=0.128.0,<0.129.0)",
+    "uvicorn (>=0.40.0,<0.41.0)"
+]
+
+[tool.poetry]
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pytest (>=9.0.2,<10.0.0)"
+]
