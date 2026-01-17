@@ -3,18 +3,16 @@ from pytestarch import Rule, get_evaluable_architecture
 
 
 class TestArchitecture:
-
     @pytest.fixture(scope="module")
-    def evaluable(self,):
+    def evaluable(
+        self,
+    ):
         """
         Cria a representação avaliável da arquitetura.
         Escaneia a pasta src/ para construir o grafo de dependências.
         """
         # Usa caminhos absolutos para garantir a construção correta do grafo
-        return get_evaluable_architecture(
-            ".", "src"
-        )
-
+        return get_evaluable_architecture(".", "src")
 
     def test_domain_isolation(self, evaluable):
         """
@@ -30,7 +28,7 @@ class TestArchitecture:
         ]
 
         for dependency in forbidden_dependencies:
-            # Se for um pacote (ex: src.usecases), usamos 
+            # Se for um pacote (ex: src.usecases), usamos
             # are_sub_modules_of para pegar tudo dentro dele
             # Se for um módulo específico ou lib externa, a lógica é a mesma
             rule = (
@@ -43,11 +41,10 @@ class TestArchitecture:
             )
             rule.assert_applies(evaluable)
 
-
     def test_usecases_isolation(self, evaluable):
         """
         Use Cases contêm regras de aplicação.
-        Podem usar o Domain, mas não devem saber 
+        Podem usar o Domain, mas não devem saber
         COMO os dados são persistidos (Adapters)
         nem como são expostos (API/FastAPI).
         """
@@ -66,7 +63,6 @@ class TestArchitecture:
                 .are_sub_modules_of(".src.usecases")
             )
             rule.assert_applies(evaluable)
-
 
     def test_adapters_isolation(self, evaluable):
         """

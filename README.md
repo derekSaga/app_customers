@@ -30,10 +30,6 @@ src/
   │   │   ├── email.py
   │   │   └── phone.py
   │   └── exceptions.py
-  ├── ports/                          # Interfaces (não versiona)
-  │   ├── __init__.py
-  │   ├── repositories.py
-  │   └── unit_of_work.py
   ├── adapters/                       # Implementações (não versiona)
   │   ├── __init__.py
   │   └── persistence/
@@ -59,12 +55,15 @@ src/
   │   └── v2/
   │       └── ...
   ├── usecases/                       # Use Cases VERSIONADOS
+  │   ├── ports/                      # Interfaces (Ports) próximas aos UseCases
+  │   │   ├── repositories.py
+  │   │   └── unit_of_work.py
   │   ├── v1/
   │   │   ├── __init__.py
   │   │   ├── base.py
-  │   │   └── customer/
+  │   │   └── customers/
   │   │       ├── __init__.py
-  │   │       ├── create.py
+  │   │       ├── create_customer.py
   │   │       ├── update.py
   │   │       ├── delete.py
   │   │       ├── get.py
