@@ -1,15 +1,21 @@
+from abc import ABC, abstractmethod
 from uuid import UUID
 
 from src.domain.entities.customer import Customer
 from src.usecases.ports.repositories import IRepository
 
 
-class ICustomerRepository(IRepository[Customer, Customer]):
+class ICustomerRepository(IRepository[Customer, Customer], ABC):
     """
     Porta de Saída (Driven Port):
     Define as operações de banco de dados necessárias, mas não como fazê-las.
     """
 
-    def add(self, entity: Customer) -> None: ...
+    @abstractmethod
+    def add(self, entity: Customer) -> Customer: ...
 
-    def get_by_id(self, id: UUID) -> Customer | None: ...
+    @abstractmethod
+    def get_by_id(self, id: UUID) -> Customer: ...
+
+    @abstractmethod
+    def exists_by_email(self, email: str) -> bool: ...

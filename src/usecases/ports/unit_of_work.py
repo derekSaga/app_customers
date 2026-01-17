@@ -1,16 +1,20 @@
+from abc import ABC, abstractmethod
 from types import TracebackType
-from typing import Protocol
 
 
-class IUnitOfWork(Protocol):
+class IUnitOfWork(ABC):
     """
     Porta para Transações Atômicas:
     Garante que tudo seja salvo junto ou nada seja salvo.
     """
 
+    @abstractmethod
     def commit(self) -> None: ...
+    @abstractmethod
     def rollback(self) -> None: ...
+    @abstractmethod
     def __enter__(self) -> "IUnitOfWork": ...
+    @abstractmethod
     def __exit__(
         self,
         exc_type: type[BaseException] | None,
