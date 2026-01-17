@@ -1,9 +1,11 @@
 from typing import Any, Protocol, runtime_checkable
 from uuid import UUID
 
+from src.usecases.ports.unit_of_work import IUnitOfWork
+
 
 @runtime_checkable
-class IRepository[TInput, TResponse](Protocol):
+class IRepository[TInput, TResponse](IUnitOfWork, Protocol):
     """Interface (port) para persistência."""
 
     # O uso de TInput aqui como parâmetro exige contravariância

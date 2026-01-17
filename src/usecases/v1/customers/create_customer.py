@@ -4,8 +4,7 @@ from uuid import uuid4
 from src.domain.entities.customer import Customer
 from src.domain.value_objects.email import Email
 from src.usecases.ports.repositories import IRepository
-from src.usecases.ports.unit_of_work import IUnitOfWork
-from src.usecases.v1.schemas.customer import CustomerCreate, CustomerRead
+from src.usecases.v1.schemas.api.customer import CustomerCreate, CustomerRead
 
 
 class CreateCustomer:
@@ -14,14 +13,13 @@ class CreateCustomer:
     Orquestra a criação da entidade e instrui a persistência via Porta.
     """
 
-    def __init__(self, uow: IUnitOfWork, repository: IRepository[Customer, Customer]):
+    def __init__(self, repository: IRepository[Customer, Customer]):
         # Injeção de Dependência: O UseCase pede um contrato (Interface),
         # não uma implementação concreta (SQLAlchemy).
-        self.uow = uow
         self.repository = repository
 
     def execute(self, dto: CustomerCreate) -> CustomerRead:
-        with self.uow:
+        with self.repository:
             # 1. Regras de Domínio (Value Objects e Entidade)
             email = Email(dto.email)
 
@@ -32,7 +30,7 @@ class CreateCustomer:
 
             # 2. Persistência (através da Porta)
             self.repository.add(customer)
-            self.uow.commit()
+            self.repository.commit()
 
             # 3. Retorno
             return CustomerRead.from_entity(customer)

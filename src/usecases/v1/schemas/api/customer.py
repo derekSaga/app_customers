@@ -1,20 +1,20 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr
+from pydantic import EmailStr
 
 from src.domain.entities.customer import Customer
+from src.usecases.v1.schemas.base.customer import CustomerBase
 
 
-class CustomerCreate(BaseModel):
+class CustomerCreate(CustomerBase):
     """Input: Dados necessários para criar um cliente."""
 
     name: str
     email: EmailStr
-    # Phone removido para alinhar com sua Entity atual
 
 
-class CustomerRead(BaseModel):
+class CustomerRead(CustomerBase):
     """Output: Dados retornados para quem chamou."""
 
     id: UUID
