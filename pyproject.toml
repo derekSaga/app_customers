@@ -11,7 +11,8 @@ dependencies = [
     "fastapi (>=0.128.0,<0.129.0)",
     "uvicorn (>=0.40.0,<0.41.0)",
     "ruff (>=0.14.13,<0.15.0)",
-    "mypy (>=1.19.1,<2.0.0)"
+    "mypy (>=1.19.1,<2.0.0)",
+    "pytestarch (>=4.0.1,<5.0.0)"
 ]
 
 [tool.poetry]
@@ -46,3 +47,7 @@ strict = true
 ignore_missing_imports = true
 disallow_untyped_defs = true
 check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
