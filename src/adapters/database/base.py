@@ -4,6 +4,8 @@ from sqlalchemy import DateTime, MetaData, func
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
+from src.config.settings import settings
+
 
 class Base(AsyncAttrs, DeclarativeBase):
     """
@@ -19,4 +21,4 @@ class Base(AsyncAttrs, DeclarativeBase):
         DateTime, server_default=func.now(), nullable=False
     )
 
-    metadata = MetaData(schema="customers")
+    metadata = MetaData(schema=settings.DATABASE_SCHEMA)
