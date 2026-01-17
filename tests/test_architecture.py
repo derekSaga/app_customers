@@ -66,7 +66,8 @@ class TestArchitecture:
 
     def test_adapters_isolation(self, evaluable):
         """
-        Adapters (Repositórios, Integrações) implementam as portas dos Use Cases.
+        Adapters (Repositórios, Integrações)
+        implementam as portas dos Use Cases.
         A API usa os Adapters, e não o contrário.
         """
         forbidden_dependencies = [

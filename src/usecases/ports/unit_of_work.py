@@ -10,14 +10,18 @@ class IUnitOfWork(ABC):
 
     @abstractmethod
     def commit(self) -> None: ...
+
     @abstractmethod
     def rollback(self) -> None: ...
-    @abstractmethod
-    def __enter__(self) -> "IUnitOfWork": ...
-    @abstractmethod
+
+    def __enter__(self) -> "IUnitOfWork":
+        return self
+
     def __exit__(
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
         exc_tb: TracebackType | None,
-    ) -> None: ...
+    ) -> None:
+        if exc_type:
+            self.rollback()

@@ -1,6 +1,8 @@
 from src.domain.services.customer_service import CustomerRegistrationService
 from src.domain.value_objects.email import Email
-from src.usecases.v1.customers.ports.repositories import ICustomerRepository
+from src.usecases.v1.customers.ports.db_customer_repository import (
+    IDBCustomerRepository,
+)
 from src.usecases.v1.schemas.api.customer import CustomerCreate, CustomerRead
 
 
@@ -11,7 +13,9 @@ class CreateCustomer:
     """
 
     def __init__(
-        self, repository: ICustomerRepository, service: CustomerRegistrationService
+        self,
+        repository: IDBCustomerRepository,
+        service: CustomerRegistrationService,
     ):
         self.repository = repository
         self.service = service
