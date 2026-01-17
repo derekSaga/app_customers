@@ -13,7 +13,7 @@ class IDBCustomerRepository(IRepository[Customer, Customer], ABC):
     """
 
     @abstractmethod
-    def exists_by_email(self, email: str) -> bool: ...
+    async def exists_by_email(self, email: str) -> bool: ...
 
 
 class ICacheCustomerRepository(ICacheRepository[Customer, Customer], ABC):
@@ -24,4 +24,4 @@ class ICacheCustomerRepository(ICacheRepository[Customer, Customer], ABC):
     """
 
     @abstractmethod
-    def get_by_id(self, id: UUID) -> Customer | None: ...
+    async def get_by_id(self, id: UUID) -> Customer | None: ...

@@ -20,8 +20,8 @@ class CreateCustomer:
         self.repository = repository
         self.service = service
 
-    def execute(self, dto: CustomerCreate) -> CustomerRead:
-        with self.repository:
+    async def execute(self, dto: CustomerCreate) -> CustomerRead:
+        async with self.repository:
             # 1. Converter DTO -> Value Object
             email = Email(dto.email)
 
@@ -29,8 +29,8 @@ class CreateCustomer:
             customer = self.service.register_new_customer(dto.name, email)
 
             # 3. Persistência
-            self.repository.add(customer)
-            self.repository.commit()
+            await self.repository.add(customer)
+            await self.repository.commit()
 
             # 4. Retorno
             return CustomerRead.from_entity(customer)

@@ -9,19 +9,19 @@ class IUnitOfWork(ABC):
     """
 
     @abstractmethod
-    def commit(self) -> None: ...
+    async def commit(self) -> None: ...
 
     @abstractmethod
-    def rollback(self) -> None: ...
+    async def rollback(self) -> None: ...
 
-    def __enter__(self) -> "IUnitOfWork":
+    async def __aenter__(self) -> "IUnitOfWork":
         return self
 
-    def __exit__(
+    async def __aexit__(
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
         exc_tb: TracebackType | None,
     ) -> None:
         if exc_type:
-            self.rollback()
+            await self.rollback()
