@@ -9,7 +9,9 @@ readme = "README.md"
 requires-python = ">=3.13.5, <=3.14.2"
 dependencies = [
     "fastapi (>=0.128.0,<0.129.0)",
-    "uvicorn (>=0.40.0,<0.41.0)"
+    "uvicorn (>=0.40.0,<0.41.0)",
+    "ruff (>=0.14.13,<0.15.0)",
+    "mypy (>=1.19.1,<2.0.0)"
 ]
 
 [tool.poetry]
@@ -21,5 +23,26 @@ build-backend = "poetry.core.masonry.api"
 
 [dependency-groups]
 dev = [
-    "pytest (>=9.0.2,<10.0.0)"
+
+    "pytest (>=8.0.0,<9.0.0)"
 ]
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+
+[tool.ruff.lint]
+# E: Pycodestyle, F: Pyflakes, I: Isort (imports), UP: Pyupgrade (modernizar sintaxe)
+select = ["E", "F", "I", "UP"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+ignore_missing_imports = true
+disallow_untyped_defs = true
+check_untyped_defs = true
