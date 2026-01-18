@@ -42,7 +42,7 @@ class RedisCache(ICacheRepository[str, str]):
     async def rollback(self) -> None:
         if self._pipeline:
             # Esvazia a fila de comandos do pipeline sem executar
-            await self._pipeline.reset()
+            self._pipeline.reset()  # type: ignore[no-untyped-call]
 
     async def get(self, key: str) -> str | None:
         # Leitura direta (fora da transação para obter dados atuais)
@@ -50,7 +50,7 @@ class RedisCache(ICacheRepository[str, str]):
         return value.decode("utf-8") if value else None
 
     async def exists(self, key: str) -> bool:
-        return await self.client.exists(key) > 0
+        return bool(await self.client.exists(key) > 0)
 
     async def set(
         self, key: str, value: str, expire: int | None = None

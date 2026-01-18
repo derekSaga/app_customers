@@ -1,4 +1,3 @@
-
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -14,8 +13,7 @@ from src.usecases.v1.customers.ports.customer_repositories import (
 
 
 class SQLAlchemyCustomerRepository(
-    SQLAlchemyRepository[Customer, CustomerModel],
-    IDBCustomerRepository
+    SQLAlchemyRepository[Customer, CustomerModel], IDBCustomerRepository
 ):
     """
     Implementação do Repositório de Clientes usando SQLAlchemy.
