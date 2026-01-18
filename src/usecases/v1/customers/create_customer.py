@@ -1,7 +1,19 @@
+from __future__ import annotations
+
 from src.domain.services.customer_service import CustomerRegistrationService
-from src.domain.value_objects.email import Email
+from src.usecases.v1.schemas.base.customer_registration_context import (
+    CustomerRegistrationContext,
+)
+from src.usecases.v1.customers.handlers.domain_validation_handler import (
+    DomainValidationHandler,
+)
+from src.usecases.v1.customers.handlers.publish_handler import PublishHandler
+from src.usecases.v1.customers.handlers.redis_check_handler import (
+    RedisCheckHandler,
+)
 from src.usecases.v1.customers.ports.customer_repositories import (
-    IDBCustomerRepository,
+    ICustomerCacheRepository,
+    ICustomerMessagePublisher,
 )
 from src.usecases.v1.schemas.api.customer import CustomerCreate, CustomerRead
 
@@ -9,28 +21,29 @@ from src.usecases.v1.schemas.api.customer import CustomerCreate, CustomerRead
 class CreateCustomer:
     """
     Caso de Uso: Criar Cliente.
-    Orquestra o serviço de domínio e a persistência.
+    Orquestra o Chain of Responsibility.
     """
 
     def __init__(
         self,
-        repository: IDBCustomerRepository,
+        cache: ICustomerCacheRepository,
+        publisher: ICustomerMessagePublisher,
         service: CustomerRegistrationService,
     ):
-        self.repository = repository
-        self.service = service
+        # Montagem da Chain
+        # Redis -> Domain (Service) -> Publish
+        self.chain = RedisCheckHandler(
+            cache,
+            next_handler=DomainValidationHandler(
+                service, next_handler=PublishHandler(publisher)
+            ),
+        )
 
     async def execute(self, dto: CustomerCreate) -> CustomerRead:
-        async with self.repository:
-            # 1. Converter DTO -> Value Object
-            email = Email(dto.email)
+        # Contexto da requisição
+        context = CustomerRegistrationContext(dto=dto)
 
-            # 2. Delegar regra de negócio para o Domain Service
-            customer = self.service.register_new_customer(dto.name, email)
+        # Executa a corrente
+        customer = await self.chain.handle(context)
 
-            # 3. Persistência
-            await self.repository.add(customer)
-            await self.repository.commit()
-
-            # 4. Retorno
-            return CustomerRead.from_entity(customer)
+        return CustomerRead.from_entity(customer)
