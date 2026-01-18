@@ -30,7 +30,9 @@ build-backend = "poetry.core.masonry.api"
 [dependency-groups]
 dev = [
 
-    "pytest (>=8.0.0,<9.0.0)"
+    "pytest (>=8.0.0,<9.0.0)",
+
+    "pytest-coverage (>=0.0,<0.1)"
 ]
 
 [tool.ruff]
@@ -56,3 +58,6 @@ check_untyped_defs = true
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
+
+[tool.coverage.report]
+fail_under = 85

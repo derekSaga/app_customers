@@ -1,4 +1,4 @@
-.PHONY: lint format diff-dump diff-copy
+.PHONY: lint format diff-dump diff-copy test
 
 lint:
 	@echo "🔍 Rodando Ruff (Linter)..."
@@ -24,3 +24,7 @@ diff-copy:
 	elif command -v clip.exe > /dev/null; then git diff --staged HEAD | clip.exe; echo "✅ Copiado para o clipboard (clip.exe)"; \
 	else echo "❌ Nenhuma ferramenta de clipboard encontrada (instale xclip ou use 'make diff-dump')."; exit 1; \
 	fi
+
+test:
+	@echo "🧪 Rodando testes com cobertura..."
+	poetry run pytest --cov=src --cov-report=term-missing --cov-report=html
