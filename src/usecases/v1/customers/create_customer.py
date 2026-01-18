@@ -1,6 +1,6 @@
 from src.domain.services.customer_service import CustomerRegistrationService
 from src.domain.value_objects.email import Email
-from src.usecases.v1.customers.ports.db_customer_repository import (
+from src.usecases.v1.customers.ports.customer_repositories import (
     IDBCustomerRepository,
 )
 from src.usecases.v1.schemas.api.customer import CustomerCreate, CustomerRead

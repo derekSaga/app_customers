@@ -3,9 +3,9 @@ import asyncio
 from loguru import logger
 from sqlalchemy import text
 
-from src.adapters.database.base import Base
 from src.adapters.database.session import engine
-from src.domain.models.customer import Customer  # noqa: F401
+from src.domain.models.base import Base
+from src.domain.models.customer import CustomerModel  # noqa: F401
 
 # ----------------------------------------------------------------------------
 # IMPORTANTE: Importe seus modelos aqui!
@@ -31,9 +31,6 @@ async def create_tables() -> None:
             await conn.execute(
                 text(f"CREATE SCHEMA IF NOT EXISTS {Base.metadata.schema}")
             )
-
-        # Se quiser resetar o banco (apagar tudo), descomente a linha abaixo:
-        # await conn.run_sync(Base.metadata.drop_all)
 
         await conn.run_sync(Base.metadata.create_all)
 
