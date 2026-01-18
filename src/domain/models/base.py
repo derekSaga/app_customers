@@ -14,6 +14,7 @@ class Base(AsyncAttrs, DeclarativeBase):
     Inclui suporte a AsyncAttrs para carregamento
     preguiçoso (lazy loading) assíncrono.
     """
+
     id: Mapped[UUID] = mapped_column(primary_key=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), nullable=False
