@@ -1,17 +1,15 @@
-from uuid import UUID
 
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.adapters.database.base import Base
 from src.domain.entities.customer import Customer
+from src.domain.models.base import Base
 from src.domain.value_objects.email import Email
 
 
 class CustomerModel(Base):
     __tablename__ = "customers"
 
-    id: Mapped[UUID] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     email: Mapped[str] = mapped_column(
         String(255), unique=True, nullable=False, index=True
