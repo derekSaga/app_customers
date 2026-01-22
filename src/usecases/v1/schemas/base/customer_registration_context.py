@@ -1,8 +1,7 @@
+from pydantic import BaseModel, ConfigDict
+
 from src.domain.entities.customer import Customer
 from src.usecases.v1.schemas.api.customer import CustomerCreate
-
-
-from pydantic import BaseModel, ConfigDict
 
 
 class CustomerRegistrationContext(BaseModel):
