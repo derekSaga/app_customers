@@ -6,10 +6,13 @@ from src.domain.entities.customer import Customer
 from src.domain.value_objects.email import Email
 
 
-class ICustomerExistenceCheck(Protocol):
-    """Interface funcional necessária para o serviço verificar duplicidade."""
+class ICustomerUniquenessChecker(Protocol):
+    """
+    Interface (Porta) para verificação de unicidade.
+    Define o contrato necessário para o Domain Service consultar existência.
+    """
 
-    def exists_by_email(self, email: str) -> bool: ...
+    async def exists_by_email(self, email: str) -> bool: ...
 
 
 class CustomerRegistrationService:
@@ -18,12 +21,13 @@ class CustomerRegistrationService:
     Garante que não existam duplicatas antes de instanciar a entidade.
     """
 
-    def __init__(self, checker: ICustomerExistenceCheck):
+    def __init__(self, checker: ICustomerUniquenessChecker):
         self.checker = checker
 
-    def register_new_customer(self, name: str, email: Email) -> Customer:
+    async def register_new_customer(self, name: str, email: Email) -> Customer:
         # 1. Regra de Negócio: Unicidade de E-mail
-        if self.checker.exists_by_email(str(email)):
+        result = await self.checker.exists_by_email(str(email))
+        if result:
             raise ValueError("Cliente já existe com este e-mail.")
 
         # 2. Criação da Entidade

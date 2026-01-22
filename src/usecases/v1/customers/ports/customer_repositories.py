@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Any, Protocol
+from typing import Protocol
 from uuid import UUID
 
 from src.domain.entities.customer import Customer
+from src.usecases.ports.base_publisher import BasePublisher
 from src.usecases.ports.repositories import ICacheRepository, IRepository
 
 
@@ -28,16 +29,20 @@ class ICacheCustomerRepository(ICacheRepository[Customer, Customer], ABC):
     async def get_by_id(self, id: UUID) -> Customer | None: ...
 
 
-class ICustomerCacheRepository(Protocol):
-    """Interface para interação com cache (ex: Redis)."""
+class ICustomerControlCache(Protocol):
+    """
+    Interface para interação com cache de controle (ex: Locks, Idempotência).
+    Difere do repositório de entidade por lidar com chaves/valores arbitrários.
+    """
 
     async def exists(self, key: str) -> bool: ...
-    async def set(self, key: str, value: Any, ttl: int = 60) -> None: ...
-
-
-class ICustomerMessagePublisher(Protocol):
-    """Interface para publicação de mensagens (ex: RabbitMQ/Kafka)."""
-
-    async def publish_customer_creation(
-        self, customer_data: dict[Any, Any]
+    async def set(
+        self, key: str, value: str, expire: int | None = None
     ) -> None: ...
+
+
+class ICustomerMessagePublisher(BasePublisher[Customer], ABC):
+    """Interface para publicação de mensagens de Cliente."""
+
+    @abstractmethod
+    async def publish_customer_creation(self, customer: Customer) -> None: ...
