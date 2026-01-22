@@ -1,9 +1,6 @@
 from __future__ import annotations
 
 from src.domain.services.customer_service import CustomerRegistrationService
-from src.usecases.v1.schemas.base.customer_registration_context import (
-    CustomerRegistrationContext,
-)
 from src.usecases.v1.customers.handlers.domain_validation_handler import (
     DomainValidationHandler,
 )
@@ -12,10 +9,13 @@ from src.usecases.v1.customers.handlers.redis_check_handler import (
     RedisCheckHandler,
 )
 from src.usecases.v1.customers.ports.customer_repositories import (
-    ICustomerCacheRepository,
+    ICustomerControlCache,
     ICustomerMessagePublisher,
 )
 from src.usecases.v1.schemas.api.customer import CustomerCreate, CustomerRead
+from src.usecases.v1.schemas.base.customer_registration_context import (
+    CustomerRegistrationContext,
+)
 
 
 class CreateCustomer:
@@ -26,24 +26,28 @@ class CreateCustomer:
 
     def __init__(
         self,
-        cache: ICustomerCacheRepository,
+        cache: ICustomerControlCache,
         publisher: ICustomerMessagePublisher,
         service: CustomerRegistrationService,
     ):
         # Montagem da Chain
         # Redis -> Domain (Service) -> Publish
-        self.chain = RedisCheckHandler(
-            cache,
-            next_handler=DomainValidationHandler(
-                service, next_handler=PublishHandler(publisher)
-            ),
-        )
+        self.cache = cache
+        self.publisher = publisher
+        self.service = service
 
     async def execute(self, dto: CustomerCreate) -> CustomerRead:
+        redis_handler = RedisCheckHandler(self.cache)
+        domain_handler = DomainValidationHandler(service=self.service)
+        publisher_handler = PublishHandler(self.publisher)
+
+        # Configura a cadeia: Redis -> Domain -> Publish
+        redis_handler.set_next(domain_handler).set_next(publisher_handler)
+
         # Contexto da requisição
         context = CustomerRegistrationContext(dto=dto)
 
-        # Executa a corrente
-        customer = await self.chain.handle(context)
+        # Executa a corrente iniciando pelo primeiro handler
+        customer = await redis_handler.handle(context)
 
         return CustomerRead.from_entity(customer)

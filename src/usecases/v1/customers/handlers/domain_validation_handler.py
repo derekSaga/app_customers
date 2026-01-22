@@ -23,7 +23,7 @@ class DomainValidationHandler(Handler[CustomerRegistrationContext]):
         email_vo = Email(context.dto.email)
 
         # O Service verifica no banco e cria a entidade
-        customer = self.service.register_new_customer(
+        customer = await self.service.register_new_customer(
             context.dto.name, email_vo
         )
 

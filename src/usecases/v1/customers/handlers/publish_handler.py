@@ -1,11 +1,12 @@
 from typing import Any
 
+from src.domain.entities.customer import Customer
 from src.usecases.ports.cor_handler_interface import Handler
-from src.usecases.v1.schemas.base.customer_registration_context import (
-    CustomerRegistrationContext,
-)
 from src.usecases.v1.customers.ports.customer_repositories import (
     ICustomerMessagePublisher,
+)
+from src.usecases.v1.schemas.base.customer_registration_context import (
+    CustomerRegistrationContext,
 )
 
 
@@ -25,12 +26,14 @@ class PublishHandler(Handler[CustomerRegistrationContext]):
         if not customer:
             raise ValueError("Entidade Customer não encontrada no contexto.")
 
-        payload = {
-            "id": str(customer.id),
-            "name": customer.name,
-            "email": str(customer.email),
-            "created_at": customer.created_at.isoformat(),
-        }
-        await self.publisher.publish_customer_creation(payload)
+        customer_data = Customer(
+            id=customer.id,
+            name=customer.name,
+            email=customer.email,
+            created_at=customer.created_at,
+            updated_at=customer.updated_at,
+        )
+
+        await self.publisher.publish_customer_creation(customer_data)
 
         return customer
