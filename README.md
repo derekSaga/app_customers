@@ -1,17 +1,19 @@
-# API de Clientes — Design & UML (Mermaid corrigido) ✅
+# API de Clientes — Design & UML (Atualizado) ✅
 
-**Objetivo:** Documentar a arquitetura e o design para uma API de Clientes (cadastrar, deletar, atualizar, pesquisar) aplicando **FastAPI + Pydantic**, **SOLID**, **OOP**, **DRY**, **Ports & Adapters** e **Unit of Work**.
-
----
-
-## 📋 Resumo rápido
-- Use cases: Create, Update, Delete, Get, Search
-- Arquitetura: Ports & Adapters (Hexagonal) + Unit of Work para transações
-- Principais camadas: API (FastAPI), UseCases, Domain (entities), Ports (interfaces), Adapters (persistence)
+**Objetivo:** Documentar a arquitetura e o design para uma API de Clientes aplicando **FastAPI**, **Clean Architecture**, **Chain of Responsibility**, **Redis** e **Assincronismo**.
 
 ---
 
-## 📦 Estrutura proposta (Ports & Adapters + Versionamento Híbrido)
+## 📋 Resumo Técnico
+- **Arquitetura:** Clean Architecture / Ports & Adapters
+- **Pattern de Criação:** Chain of Responsibility (para validações e side-effects)
+- **Cache:** Redis (Lock otimista e verificação de duplicidade)
+- **Banco de Dados:** SQLAlchemy (Async)
+- **Mensageria:** Interface preparada para publicação de eventos (PublishHandler)
+
+---
+
+## 📦 Estrutura do Projeto
 
 ```
 src/

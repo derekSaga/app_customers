@@ -24,6 +24,23 @@ services:
     networks:
       - app_network
 
+  redis:
+    image: redis:7
+    container_name: app_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - app_network
+
+  pubsub-emulator:
+    image: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
+    container_name: app_pubsub_emulator
+    command: gcloud beta emulators pubsub start --host-port=0.0.0.0:8085 --project=app-customers
+    ports:
+      - "8085:8085"
+    networks:
+      - app_network
+
 networks:
   app_network:
     driver: bridge
