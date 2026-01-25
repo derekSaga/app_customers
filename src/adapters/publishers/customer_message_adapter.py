@@ -13,9 +13,5 @@ class CustomerMessageAdapter(PubSubPublisher, ICustomerMessagePublisher):
     """
 
     async def publish_customer_creation(self, customer: Customer) -> None:
-        """
-        Implementação do contrato definido pelo Use Case.
-        """
         destination = "events.customer.created"
-
         await self.publish(destination=destination, payload=customer)

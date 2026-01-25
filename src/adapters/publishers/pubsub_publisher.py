@@ -24,7 +24,7 @@ class PubSubPublisher(BasePublisher[Any]):
         self.pubsub_client = pubsub_client
         self.project_id = project_id
 
-    def __callback(self, publish_future: Future) -> None:
+    def __callback(self, publish_future: Future[str]) -> None:
         try:
             logger.info(f"Published message ID: {publish_future.result()}")
         except Exception as e:

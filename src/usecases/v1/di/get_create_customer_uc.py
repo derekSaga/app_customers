@@ -8,12 +8,12 @@ from src.adapters.database.repositories.customer_repository import (
     SQLAlchemyCustomerRepository,
 )
 from src.adapters.database.session import async_session_factory
+from src.adapters.publishers.customer_message_adapter import (
+    CustomerMessageAdapter,
+)
 from src.config.settings import settings
 from src.domain.services.customer_service import CustomerRegistrationService
 from src.usecases.v1.customers.create_customer import CreateCustomer
-from src.usecases.v1.customers.ports.customer_publisher import (
-    CustomerMessageAdapter,
-)
 
 # --- 1. Infrastructure Providers (Singletons) ---
 
