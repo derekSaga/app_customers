@@ -34,6 +34,8 @@ class RedisCache(ICacheRepository[str, str]):
         if self._pipeline:
             if exc_type:
                 await self.rollback()
+            else:
+                await self.commit()
             self._pipeline = None
 
     async def commit(self) -> None:
@@ -47,7 +49,7 @@ class RedisCache(ICacheRepository[str, str]):
     async def get(self, key: str) -> str | None:
         # Leitura direta (fora da transação para obter dados atuais)
         value = await self.client.get(key)
-        return value.decode("utf-8") if value else None
+        return str(value) if value is not None else None
 
     async def exists(self, key: str) -> bool:
         return bool(await self.client.exists(key) > 0)

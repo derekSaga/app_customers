@@ -11,6 +11,7 @@ from src.usecases.v1.customers.handlers.redis_check_handler import (
 from src.usecases.v1.customers.ports.customer_repositories import (
     ICustomerControlCache,
     ICustomerMessagePublisher,
+    IDBCustomerRepository,
 )
 from src.usecases.v1.schemas.api.customer import CustomerCreate, CustomerRead
 from src.usecases.v1.schemas.base.customer_registration_context import (
@@ -29,25 +30,25 @@ class CreateCustomer:
         cache: ICustomerControlCache,
         publisher: ICustomerMessagePublisher,
         service: CustomerRegistrationService,
+        uow: IDBCustomerRepository,
     ):
         # Montagem da Chain
         # Redis -> Domain (Service) -> Publish
         self.cache = cache
         self.publisher = publisher
         self.service = service
+        self.uow = uow
 
     async def execute(self, dto: CustomerCreate) -> CustomerRead:
-        redis_handler = RedisCheckHandler(self.cache)
-        domain_handler = DomainValidationHandler(service=self.service)
-        publisher_handler = PublishHandler(self.publisher)
+        async with self.cache, self.uow:
+            redis_handler = RedisCheckHandler(self.cache)
+            domain_handler = DomainValidationHandler(service=self.service)
+            publisher_handler = PublishHandler(self.publisher)
 
-        # Configura a cadeia: Redis -> Domain -> Publish
-        redis_handler.set_next(domain_handler).set_next(publisher_handler)
+            redis_handler.set_next(domain_handler).set_next(publisher_handler)
 
-        # Contexto da requisição
-        context = CustomerRegistrationContext(dto=dto)
+            context = CustomerRegistrationContext(dto=dto)
 
-        # Executa a corrente iniciando pelo primeiro handler
-        customer = await redis_handler.handle(context)
+            customer = await redis_handler.handle(context)
 
-        return CustomerRead.from_entity(customer)
+            return CustomerRead.from_entity(customer)

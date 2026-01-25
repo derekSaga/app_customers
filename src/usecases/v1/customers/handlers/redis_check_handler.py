@@ -29,5 +29,5 @@ class RedisCheckHandler(Handler[CustomerRegistrationContext]):
 
         # Cadastra no Redis (Lock temporário)
         await self.cache.set(email, "processing", expire=60)
-
+        # await self.cache.commit()
         return await super().handle(context)

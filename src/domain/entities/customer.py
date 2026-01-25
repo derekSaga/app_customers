@@ -1,25 +1,19 @@
+from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
 from src.domain.value_objects.email import Email
 
 
+@dataclass
 class Customer:
     """Entity com identidade única e mutável."""
 
-    def __init__(
-        self,
-        id: UUID,
-        name: str,
-        email: Email,
-        created_at: datetime,
-        updated_at: datetime,
-    ):
-        self.id = id
-        self.name = name
-        self.email = email
-        self.created_at = created_at
-        self.updated_at = updated_at
+    id: UUID
+    name: str
+    email: Email
+    created_at: datetime
+    updated_at: datetime
 
     def change_email(self, new_email_str: str) -> None:
         """Altera email — cria novo Value Object com validação."""

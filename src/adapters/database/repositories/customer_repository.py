@@ -1,5 +1,5 @@
 from sqlalchemy import select, update
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.adapters.database.repositories.base_repository import (
     SQLAlchemyRepository,
@@ -20,8 +20,8 @@ class SQLAlchemyCustomerRepository(
     Gerencia a persistência e o ciclo de vida da sessão (Unit of Work).
     """
 
-    def __init__(self, session_factory: async_sessionmaker[AsyncSession]):
-        super().__init__(session_factory, CustomerModel)
+    def __init__(self, session: AsyncSession):
+        super().__init__(session, CustomerModel)
 
     async def update(self, entity: Customer) -> Customer:
         stmt = (

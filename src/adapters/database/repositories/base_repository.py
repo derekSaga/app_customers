@@ -4,7 +4,7 @@ from typing import Any, TypeVar
 from uuid import UUID
 
 from sqlalchemy import delete, select
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.models.base import Base
 from src.usecases.ports.repositories import IRepository
@@ -23,26 +23,15 @@ class SQLAlchemyRepository[TDomainEntity, TModel: Base](
 
     def __init__(
         self,
-        session_factory: async_sessionmaker[AsyncSession],
+        session: AsyncSession,
         model_class: type[TModel],
     ):
-        self.session_factory = session_factory
+        self.session = session
         self.model_class = model_class
-        self._session: AsyncSession | None = None
-
-    @property
-    def session(self) -> AsyncSession:
-        if not self._session:
-            raise RuntimeError(
-                "Sessão não inicializada. Use 'async with repository' "
-                "ou inicialize manualmente."
-            )
-        return self._session
 
     async def __aenter__(
         self: "SQLAlchemyRepository[TDomainEntity, TModel]",
     ) -> "SQLAlchemyRepository[TDomainEntity, TModel]":
-        self._session = self.session_factory()
         return self
 
     async def __aexit__(
@@ -51,11 +40,11 @@ class SQLAlchemyRepository[TDomainEntity, TModel: Base](
         exc_val: BaseException | None,
         exc_tb: TracebackType | None,
     ) -> None:
-        if self._session:
-            if exc_type:
-                await self.rollback()
-            await self._session.close()
-            self._session = None
+        if exc_type:
+            await self.rollback()
+            # raise exc_type from exc_val
+
+        await self.commit()
 
     async def commit(self) -> None:
         await self.session.commit()
@@ -66,11 +55,13 @@ class SQLAlchemyRepository[TDomainEntity, TModel: Base](
     async def add(self, entity: TDomainEntity) -> TDomainEntity:
         model = self._to_model(entity)
         self.session.add(model)
+        await self.session.flush()
         return entity
 
     async def update(self, entity: TDomainEntity) -> TDomainEntity:
         model = self._to_model(entity)
         await self.session.merge(model)
+        await self.session.flush()
         return entity
 
     async def get_by_id(self, id: UUID) -> TDomainEntity | None:
@@ -82,6 +73,7 @@ class SQLAlchemyRepository[TDomainEntity, TModel: Base](
     async def delete(self, id: UUID) -> None:
         stmt = delete(self.model_class).where(self.model_class.id == id)
         await self.session.execute(stmt)
+        await self.session.flush()
 
     async def search(self, filter: dict[str, Any]) -> list[TDomainEntity]:
         stmt = select(self.model_class)

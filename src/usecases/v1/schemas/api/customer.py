@@ -10,7 +10,6 @@ from src.usecases.v1.schemas.base.customer import CustomerBase
 class CustomerCreate(CustomerBase):
     """Input: Dados necessários para criar um cliente."""
 
-    name: str
     email: EmailStr
 
 
@@ -18,7 +17,6 @@ class CustomerRead(CustomerBase):
     """Output: Dados retornados para quem chamou."""
 
     id: UUID
-    name: str
     email: str
     created_at: datetime
     updated_at: datetime

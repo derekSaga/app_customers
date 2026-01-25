@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Protocol
 from uuid import UUID
 
 from src.domain.entities.customer import Customer
@@ -29,16 +28,13 @@ class ICacheCustomerRepository(ICacheRepository[Customer, Customer], ABC):
     async def get_by_id(self, id: UUID) -> Customer | None: ...
 
 
-class ICustomerControlCache(Protocol):
+class ICustomerControlCache(ICacheRepository[str, str], ABC):
     """
     Interface para interação com cache de controle (ex: Locks, Idempotência).
-    Difere do repositório de entidade por lidar com chaves/valores arbitrários.
+    Herda de ICacheRepository para aproveitar o contrato de UnitOfWork.
     """
 
-    async def exists(self, key: str) -> bool: ...
-    async def set(
-        self, key: str, value: str, expire: int | None = None
-    ) -> None: ...
+    pass
 
 
 class ICustomerMessagePublisher(BasePublisher[Customer], ABC):
