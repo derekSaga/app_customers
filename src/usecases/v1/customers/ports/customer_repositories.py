@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
+from src.adapters.publishers.base_publisher import BasePublisher
 from src.domain.entities.customer import Customer
-from src.usecases.ports.base_publisher import BasePublisher
 from src.usecases.ports.repositories import ICacheRepository, IRepository
 
 

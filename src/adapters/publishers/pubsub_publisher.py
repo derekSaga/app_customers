@@ -6,9 +6,9 @@ from asgi_correlation_id import correlation_id
 from google.cloud.pubsub_v1 import PublisherClient
 from loguru import logger
 
+from src.adapters.publishers.base_publisher import BasePublisher
 from src.config.settings import settings
 from src.domain.entities.message import MessageHeader
-from src.usecases.ports.base_publisher import BasePublisher
 
 
 class PubSubPublisher(BasePublisher[Any]):
