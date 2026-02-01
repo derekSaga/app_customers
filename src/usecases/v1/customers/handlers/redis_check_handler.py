@@ -1,5 +1,6 @@
 from typing import Any
 
+from src.domain.exceptions import CustomerAlreadyExistsError
 from src.usecases.ports.cor_handler_interface import Handler
 from src.usecases.v1.customers.ports.customer_repositories import (
     ICustomerControlCache,
@@ -25,7 +26,7 @@ class RedisCheckHandler(Handler[CustomerRegistrationContext]):
 
         # Verifica se já existe no cache
         if await self.cache.exists(email):
-            raise ValueError("Cliente já existe (Cache).")
+            raise CustomerAlreadyExistsError(email)
 
         # Cadastra no Redis (Lock temporário)
         await self.cache.set(email, "processing", expire=60)

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from src.di.v1.get_create_customer_uc import get_create_customer_use_case
+from src.domain.exceptions import CustomerAlreadyExistsError
 from src.usecases.v1.customers.create_customer import CreateCustomer
 from src.usecases.v1.schemas.api.customer import CustomerCreate, CustomerRead
 from loguru import logger
@@ -9,7 +10,7 @@ from loguru import logger
 router = APIRouter(prefix="/api/v1/customers", tags=["customers"])
 
 
-@router.post("/", summary="Create a new customer", status_code=201)
+@router.post("/", summary="Create a new customer", status_code=202)
 async def create_customer(
     payload: CustomerCreate,
     controller: CreateCustomer = Depends(get_create_customer_use_case),
@@ -19,6 +20,9 @@ async def create_customer(
     """
     try:
         return await controller.execute(payload)
+    except CustomerAlreadyExistsError as e:
+        logger.warning(f"Business rule violation: {e}")
+        raise HTTPException(status_code=409, detail=str(e))
     except Exception as e:
         logger.exception(f"Error creating customer: {e}")
         raise HTTPException(status_code=500, detail=str(e))
