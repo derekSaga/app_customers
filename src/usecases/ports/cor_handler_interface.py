@@ -6,13 +6,13 @@ from typing import Any, TypeVar
 T = TypeVar("T")
 
 
-class Handler[T](ABC):
+class IHandler[T](ABC):
     """Classe base para os handlers da corrente."""
 
-    def __init__(self, next_handler: "Handler[T] | None" = None):
+    def __init__(self, next_handler: "IHandler[T] | None" = None):
         self._next_handler = next_handler
 
-    def set_next(self, handler: "Handler[T]") -> "Handler[T]":
+    def set_next(self, handler: "IHandler[T]") -> "IHandler[T]":
         self._next_handler = handler
         return handler
 

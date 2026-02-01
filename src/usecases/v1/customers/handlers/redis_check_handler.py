@@ -1,7 +1,7 @@
 from typing import Any
 
 from src.domain.exceptions import CustomerAlreadyExistsError
-from src.usecases.ports.cor_handler_interface import Handler
+from src.usecases.ports.cor_handler_interface import IHandler
 from src.usecases.v1.customers.ports.customer_repositories import (
     ICustomerControlCache,
 )
@@ -10,13 +10,13 @@ from src.usecases.v1.schemas.base.customer_registration_context import (
 )
 
 
-class RedisCheckHandler(Handler[CustomerRegistrationContext]):
+class RedisCheckHandler(IHandler[CustomerRegistrationContext]):
     """1. Verifica e cadastra no Redis (Short-circuit)."""
 
     def __init__(
         self,
         cache: ICustomerControlCache,
-        next_handler: Handler[CustomerRegistrationContext] | None = None,
+        next_handler: IHandler[CustomerRegistrationContext] | None = None,
     ):
         super().__init__(next_handler)
         self.cache = cache
