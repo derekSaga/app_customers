@@ -15,7 +15,7 @@ from src.adapters.publishers.customer_message_adapter import (
 )
 from src.config.settings import settings
 from src.domain.services.customer_service import CustomerRegistrationService
-from src.usecases.v1.customers.create_customer import CreateCustomer
+from src.usecases.v1.customers.create_customer import InitiateCustomerCreation
 from src.usecases.v1.customers.ports.customer_repositories import (
     ICustomerControlCache,
 )
@@ -76,16 +76,16 @@ def get_customer_registration_service(
 
 def get_create_customer_use_case(
     session: AsyncSession = Depends(get_session),
-) -> CreateCustomer:
+) -> InitiateCustomerCreation:
     """
-    Factory principal para o caso de uso CreateCustomer.
+    Factory principal para o caso de uso InitiateCustomerCreation.
     Injeta todas as dependências necessárias.
     """
     repository = get_customer_repository(session)
 
-    return CreateCustomer(
+    return InitiateCustomerCreation(
         cache=get_redis_cache(),
         publisher=get_message_publisher(),
         service=get_customer_registration_service(session),
-        uow=repository,
+        repository=repository,
     )

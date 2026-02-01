@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
+from src.domain.entities.message import Message
 from src.domain.value_objects.email import Email
 
 
@@ -29,3 +30,9 @@ class Customer:
 
     def __hash__(self) -> int:
         return hash(self.id)
+
+
+class CustomerCreateMessage(Message[Customer]):
+    """Mensagem para criação de cliente."""
+
+    pass
