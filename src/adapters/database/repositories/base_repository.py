@@ -7,7 +7,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.models.base import Base
-from src.usecases.ports.repositories import IRepository
+from src.usecases.ports.repositories_interface import IRepository
 
 TModel = TypeVar("TModel", bound=Base)
 TDomainEntity = TypeVar("TDomainEntity")

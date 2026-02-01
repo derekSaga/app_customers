@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 from uuid import UUID
 
-from src.usecases.ports.unit_of_work import IUnitOfWork
+from src.usecases.ports.unit_of_work_interface import IUnitOfWork
 
 
 class IRepository[TInput, TResponse](IUnitOfWork, ABC):

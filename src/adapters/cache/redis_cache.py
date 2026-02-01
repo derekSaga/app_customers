@@ -3,7 +3,7 @@ from types import TracebackType
 import redis.asyncio as redis
 from redis.asyncio.client import Pipeline
 
-from src.usecases.ports.repositories import ICacheRepository
+from src.usecases.ports.repositories_interface import ICacheRepository
 
 
 class RedisCache(ICacheRepository[str, str]):
