@@ -17,7 +17,7 @@ class CustomerMessageAdapter(PubSubPublisher, ICustomerMessagePublisher):
     EVENT_TYPE = "com.derekcompany.customer.create"
 
     async def publish_customer_creation(self, customer: Customer) -> None:
-        await self.publish(
+        await self.publish_message(
             destination=self.DESTINATION,
             payload=customer,
             event_type=self.EVENT_TYPE,

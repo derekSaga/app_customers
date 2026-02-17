@@ -32,7 +32,7 @@ class CreateCustomerHandler(
         return Customer(
             id=payload["id"],
             name=payload["name"],
-            email=Email(str(payload["email"])),
+            email=Email(str(payload["email"]["value"])),
         )
 
     async def handle_message(

@@ -44,7 +44,7 @@ class RedisCache(ICacheRepository[str, str]):
     async def rollback(self) -> None:
         if self._pipeline:
             # Esvazia a fila de comandos do pipeline sem executar
-            self._pipeline.reset()  # type: ignore[no-untyped-call]
+            await self._pipeline.reset()  # type: ignore[no-untyped-call]
 
     async def get(self, key: str) -> str | None:
         # Leitura direta (fora da transação para obter dados atuais)

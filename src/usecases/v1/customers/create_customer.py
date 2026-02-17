@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from loguru import logger
+
 from src.domain.entities.customer import Customer
 from src.domain.services.customer_service import CustomerRegistrationService
 from src.usecases.ports.usecase_interface import IUsecase
@@ -44,6 +46,10 @@ class InitiateCustomerCreation(
         self.repository = repository
 
     async def execute(self, input_data: CustomerCreate) -> CustomerRead:
+        logger.info(
+            f"Initiating customer creation flow for email: {input_data.email}"
+        )
+
         redis_handler = RedisCheckHandler(self.cache)
         domain_handler = DomainValidationHandler(service=self.service)
         publisher_handler = PublishHandler(self.publisher)
@@ -53,6 +59,10 @@ class InitiateCustomerCreation(
         context = CustomerRegistrationContext(dto=input_data)
 
         customer = await redis_handler.handle(context)
+
+        logger.info(
+            f"Customer creation initiated successfully. ID: {customer.id}"
+        )
 
         return CustomerRead.from_entity(customer)
 
@@ -67,5 +77,7 @@ class CustomerCreateUseCase(
         self.repository = repository
     
     async def execute(self, input_data: Customer) -> CustomerRead:
+        logger.info(f"Persisting customer {input_data.id} to database.")
         created_customer = await self.repository.add(input_data)
+        logger.info(f"Customer {created_customer.id} persisted successfully.")
         return CustomerRead.from_entity(created_customer)

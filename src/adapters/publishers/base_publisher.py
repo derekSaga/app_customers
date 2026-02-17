@@ -37,7 +37,7 @@ class BasePublisher[T](ABC):
         """
         ...
 
-    async def publish(
+    async def publish_message(
         self,
         destination: str,
         payload: T,
