@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 from types import TracebackType
+from typing import TypeVar
+
+T = TypeVar("T", bound="IUnitOfWork")
 
 
 class IUnitOfWork(ABC):
@@ -14,7 +17,7 @@ class IUnitOfWork(ABC):
     @abstractmethod
     async def rollback(self) -> None: ...
 
-    async def __aenter__(self) -> "IUnitOfWork":
+    async def __aenter__(self: T) -> T:
         return self
 
     async def __aexit__(

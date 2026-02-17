@@ -1,4 +1,5 @@
 import functools
+from collections.abc import AsyncGenerator
 
 import redis.asyncio as redis
 from fastapi import Depends
@@ -9,15 +10,19 @@ from src.adapters.cache.redis_cache import RedisCache
 from src.adapters.database.repositories.customer_repository import (
     SQLAlchemyCustomerRepository,
 )
-from src.adapters.database.session import get_session
+from src.adapters.database.session import async_session_factory
 from src.adapters.publishers.customer_message_adapter import (
     CustomerMessageAdapter,
 )
 from src.config.settings import settings
 from src.domain.services.customer_service import CustomerRegistrationService
-from src.usecases.v1.customers.create_customer import InitiateCustomerCreation
+from src.usecases.v1.customers.create_customer import (
+    CustomerCreateUseCase,
+    InitiateCustomerCreation,
+)
 from src.usecases.v1.customers.ports.customer_repositories import (
     ICustomerControlCache,
+    IDBCustomerRepository,
 )
 
 # --- 1. Infrastructure Providers (Singletons) ---
@@ -52,7 +57,7 @@ def get_redis_cache() -> CustomerRedisCache:
 
 def get_customer_repository(
     session: AsyncSession,
-) -> SQLAlchemyCustomerRepository:
+) -> IDBCustomerRepository:
     return SQLAlchemyCustomerRepository(session=session)
 
 
@@ -64,28 +69,54 @@ def get_message_publisher() -> CustomerMessageAdapter:
 
 
 def get_customer_registration_service(
-    session: AsyncSession,
+    repository: IDBCustomerRepository,
 ) -> CustomerRegistrationService:
-    return CustomerRegistrationService(
-        checker=get_customer_repository(session)
-    )
+    return CustomerRegistrationService(checker=repository)
 
 
 # --- 4. UseCase Factory ---
 
 
-def get_create_customer_use_case(
-    session: AsyncSession = Depends(get_session),
+async def get_uow() -> AsyncGenerator[IDBCustomerRepository]:
+    """Dependency para gerenciar o ciclo de vida do Banco de Dados na API."""
+    # Cria a sessão e o repositório
+    uow = get_customer_repository(async_session_factory())
+    async with uow:
+        yield uow
+
+
+async def get_cache_uow() -> AsyncGenerator[ICustomerControlCache]:
+    """Dependency para gerenciar o ciclo de vida do Cache na API."""
+    cache = get_redis_cache()
+    async with cache:
+        yield cache
+
+
+def get_initiate_customer_creation_uc(
+    repository: IDBCustomerRepository = Depends(get_uow),
+    cache: ICustomerControlCache = Depends(get_cache_uow),
 ) -> InitiateCustomerCreation:
     """
     Factory principal para o caso de uso InitiateCustomerCreation.
-    Injeta todas as dependências necessárias.
+    Utiliza Depends para que o FastAPI gerencie o commit/rollback dos recursos.
     """
-    repository = get_customer_repository(session)
-
     return InitiateCustomerCreation(
-        cache=get_redis_cache(),
+        cache=cache,
         publisher=get_message_publisher(),
-        service=get_customer_registration_service(session),
+        service=get_customer_registration_service(repository),
         repository=repository,
     )
+
+
+def get_create_customer_uc(
+    uow: IDBCustomerRepository,
+) -> CustomerCreateUseCase:
+    """
+    Alias para get_initiate_customer_creation_uc para compatibilidade.
+    """
+    return CustomerCreateUseCase(repository=uow)
+
+
+def get_customer_uow_factory() -> IDBCustomerRepository:
+    """Factory para criar o Unit of Work (Repositório)."""
+    return get_customer_repository(async_session_factory())

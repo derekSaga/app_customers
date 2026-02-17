@@ -42,7 +42,7 @@ class SQLAlchemyRepository[TDomainEntity, TModel: Base](
     ) -> None:
         if exc_type:
             await self.rollback()
-            # raise exc_type from exc_val
+            raise exc_type from exc_val
 
         await self.commit()
 

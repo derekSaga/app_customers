@@ -1,15 +1,17 @@
 .PHONY: lint format diff-dump diff-copy test
 
+ARGS ?= .
+
 lint:
 	@echo "🔍 Rodando Ruff (Linter)..."
-	poetry run ruff check .
+	poetry run ruff check $(ARGS)
 	@echo "🧠 Rodando Mypy (Type Checker)..."
-	poetry run mypy .
+	poetry run mypy $(ARGS)
 
 format:
 	@echo "🎨 Formatando código..."
-	poetry run ruff check --fix .
-	poetry run ruff format .
+	poetry run ruff check --fix $(ARGS)
+	poetry run ruff format $(ARGS)
 
 diff-dump:
 	@echo "📋 Exportando diff (staged) para t.txt..."

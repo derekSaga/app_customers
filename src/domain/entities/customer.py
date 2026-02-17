@@ -13,8 +13,8 @@ class Customer:
     id: UUID
     name: str
     email: Email
-    created_at: datetime
-    updated_at: datetime
+    created_at: datetime = datetime.now()
+    updated_at: datetime = datetime.now()
 
     def change_email(self, new_email_str: str) -> None:
         """Altera email — cria novo Value Object com validação."""

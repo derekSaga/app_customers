@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from loguru import logger
 
-from src.di.v1.get_create_customer_uc import get_create_customer_use_case
+from src.di.v1.get_create_customer_uc import get_initiate_customer_creation_uc
 from src.domain.exceptions import CustomerAlreadyExistsError
 from src.usecases.v1.customers.create_customer import InitiateCustomerCreation
 from src.usecases.v1.schemas.api.customer import CustomerCreate, CustomerRead
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/v1/customers", tags=["customers"])
 async def create_customer(
     payload: CustomerCreate,
     controller: InitiateCustomerCreation = Depends(
-        get_create_customer_use_case
+        get_initiate_customer_creation_uc
     )
 ) -> CustomerRead:
     """

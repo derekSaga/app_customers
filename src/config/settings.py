@@ -14,5 +14,10 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
+    CUSTOMER_CREATE_TOPIC: str = Field(default="command.create.customer")
+    CUSTOMER_CREATE_TOPIC_SUBSCRIPTION: str = Field(
+        default="command.create.customer.app_customer.sub"
+    )
+
 
 settings = Settings()  # type: ignore[call-arg]

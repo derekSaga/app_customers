@@ -1,4 +1,5 @@
 from src.adapters.publishers.pubsub_publisher import PubSubPublisher
+from src.config.settings import settings
 from src.domain.entities.customer import Customer
 from src.usecases.v1.customers.ports.customer_repositories import (
     ICustomerMessagePublisher,
@@ -12,6 +13,12 @@ class CustomerMessageAdapter(PubSubPublisher, ICustomerMessagePublisher):
     ICustomerMessagePublisher (Domínio).
     """
 
+    DESTINATION = settings.CUSTOMER_CREATE_TOPIC
+    EVENT_TYPE = "com.derekcompany.customer.create"
+
     async def publish_customer_creation(self, customer: Customer) -> None:
-        destination = "events.customer.created"
-        await self.publish(destination=destination, payload=customer)
+        await self.publish(
+            destination=self.DESTINATION,
+            payload=customer,
+            event_type=self.EVENT_TYPE,
+        )
