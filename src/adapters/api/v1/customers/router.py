@@ -14,7 +14,7 @@ async def create_customer(
     payload: CustomerCreate,
     controller: InitiateCustomerCreation = Depends(
         get_initiate_customer_creation_uc
-    )
+    ),
 ) -> CustomerRead:
     """
     Inicia o processo de criação de cliente de forma assíncrona.

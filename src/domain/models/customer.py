@@ -35,9 +35,16 @@ class CustomerModel(Base):
             else customer.email
         )
 
-        return CustomerModel(
+        model = CustomerModel(
             id=customer.id, name=customer.name, email=email_str
         )
+
+        if customer.created_at is not None:
+            model.created_at = customer.created_at
+        if customer.updated_at is not None:
+            model.updated_at = customer.updated_at
+
+        return model
 
     def __repr__(self) -> str:
         return f"<CustomerModel(id={self.id}, email='{self.email}')>"

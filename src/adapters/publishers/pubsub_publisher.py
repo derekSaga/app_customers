@@ -35,10 +35,7 @@ class PubSubPublisher(BasePublisher[Any]):
         return correlation_id.get() or str(uuid.uuid4())
 
     async def send_message(
-        self,
-        destination: str,
-        body: str,
-        attributes: dict[str, str]
+        self, destination: str, body: str, attributes: dict[str, str]
     ) -> None:
         """
         Envia a mensagem para o tópico do Pub/Sub e aguarda a confirmação.

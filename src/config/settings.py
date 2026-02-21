@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite+aiosqlite:///./customers.db"
     DATABASE_SCHEMA: str = "customer"
     ECHO_SQL: bool = True
+    LOG_LEVEL: str = "INFO"
     PUBSUB_PROJECT_ID: str = Field(...)
     REDIS_HOST: str = Field(...)
     REDIS_PORT: int = Field(default=6379)

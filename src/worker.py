@@ -3,6 +3,7 @@ import signal
 
 from loguru import logger
 
+from src.config.logging import configure_logging
 from src.di.v1.consumers import get_consumer_manager
 
 
@@ -11,6 +12,7 @@ async def main() -> None:
     Entrypoint para o Worker de Consumidores.
     Responsável por processar mensagens do Pub/Sub em background.
     """
+    configure_logging()
     logger.info("🚀 Iniciando Worker de Consumidores...")
 
     # 1. Instancia o gerenciador e configura as dependências

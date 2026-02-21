@@ -23,9 +23,7 @@ from src.usecases.v1.schemas.base.customer_registration_context import (
 )
 
 
-class InitiateCustomerCreation(
-    IUsecase[CustomerCreate, CustomerRead]
-):
+class InitiateCustomerCreation(IUsecase[CustomerCreate, CustomerRead]):
     """
     Caso de Uso: Iniciar Criação de Cliente.
     Orquestra o Chain of Responsibility.
@@ -67,15 +65,13 @@ class InitiateCustomerCreation(
         return CustomerRead.from_entity(customer)
 
 
-class CustomerCreateUseCase(
-    IUsecase[Customer, CustomerRead]
-):
+class CustomerCreateUseCase(IUsecase[Customer, CustomerRead]):
     def __init__(
         self,
         repository: IDBCustomerRepository,
     ):
         self.repository = repository
-    
+
     async def execute(self, input_data: Customer) -> CustomerRead:
         logger.info(f"Persisting customer {input_data.id} to database.")
         created_customer = await self.repository.add(input_data)

@@ -2,6 +2,7 @@ import asyncio
 import json
 from typing import Any, TypeVar
 
+from asgi_correlation_id import correlation_id
 from google.cloud.pubsub_v1 import SubscriberClient
 from google.cloud.pubsub_v1.subscriber.message import Message as PubSubMessage
 from loguru import logger
@@ -58,20 +59,31 @@ class PubSubConsumer(IConsumer):
         Callback síncrono chamado pela lib do Pub/Sub.
         Faz a ponte para o loop assíncrono.
         """
+        context: dict[Any, Any] = {}
         try:
+            logger.info(
+                f"Queue {self.subscription_id} "
+                f"Received message: {message.message_id}"
+            )
             future = asyncio.run_coroutine_threadsafe(
-                self._process_message(message), self._loop
+                self._process_message(message, context), self._loop
             )
             # Aguarda o resultado para confirmar (ack) ou rejeitar (nack)
             future.result(timeout=60)
             message.ack()
         except Exception as e:
+            correlation_id.set(context.get("correlation_id", "unknown"))
             logger.error(f"Error processing message {message.message_id}: {e}")
             message.nack()
 
-    async def _process_message(self, message: PubSubMessage) -> None:
+    async def _process_message(
+        self, message: PubSubMessage, context: dict[Any, Any]
+    ) -> None:
         """Wrapper interno para preparar chamada ao _callback."""
-        context = dict(message.attributes)
+        context.update(dict(message.attributes))
+        logger.info(
+            f"Processing message {message.message_id} with context: {context}"
+        )
         await self._callback(message.data, context)
 
     async def _callback(self, message: bytes, context: dict[str, Any]) -> None:
@@ -79,25 +91,24 @@ class PubSubConsumer(IConsumer):
         Deserializa a mensagem e chama o consume.
         """
         try:
+            logger.info(f"Raw message data: {str(message)}")
             decoded_data = message.decode("utf-8")
             payload_dict = json.loads(decoded_data)
 
             msg = Message(
                 data=payload_dict.get(
-                    "data",
-                    payload_dict.get("payload", payload_dict)
+                    "data", payload_dict.get("payload", payload_dict)
                 ),
                 type=payload_dict.get("type", None),
                 source=payload_dict.get(
-                    "source",
-                    context.get("source", "pubsub.subscriber")
+                    "source", context.get("source", "pubsub.subscriber")
                 ),
                 correlation_id=(
-                    context.get("correlation_id") 
+                    context.get("correlation_id")
                     or payload_dict.get("correlation_id")
-                )
+                ),
             )
-
+            correlation_id.set(msg.correlation_id)
             await self.handler.handle_message(msg, context)
         except Exception as e:
             logger.error(f"Deserialization error: {e}")

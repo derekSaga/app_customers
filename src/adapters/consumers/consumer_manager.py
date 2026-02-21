@@ -15,7 +15,7 @@ class ConsumerManager:
         self.consumers = consumers
 
     def start_all(self) -> None:
-        """Inicia o consumo de mensagens para 
+        """Inicia o consumo de mensagens para
         todos os consumidores registrados."""
         logger.info(f"Starting {len(self.consumers)} consumers...")
         for consumer in self.consumers:

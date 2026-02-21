@@ -13,7 +13,7 @@ class IConsumerHandler[TMessage](ABC):
         Processa a mensagem recebida.
 
         Args:
-            message: A mensagem decodificada 
+            message: A mensagem decodificada
                 (ex: Envelope, JSON dict, ou bytes).
             context: Metadados do contexto de execução (ex: tracing, headers).
         """
@@ -27,6 +27,7 @@ class BaseUseCaseHandler[TMessage, TInput, TOutput](
     Classe base para handlers que executam um Caso de Uso (IUsecase).
     Responsável por adaptar a mensagem recebida para o input do Use Case.
     """
+
     @abstractmethod
     def extract_input(
         self, message: TMessage, context: dict[str, Any]

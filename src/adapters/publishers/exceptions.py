@@ -9,5 +9,5 @@ class PublishTimeoutError(PublisherError):
 
 
 class PublishFailedError(PublisherError):
-    """Raised when a message fails to 
+    """Raised when a message fails to
     publish for reasons other than timeout."""

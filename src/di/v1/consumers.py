@@ -26,7 +26,6 @@ def get_subscriber_client() -> SubscriberClient:
     return SubscriberClient()
 
 
-
 async def get_consumer_manager() -> ConsumerManager:
     """
     Factory para criar e agrupar todos os consumidores da aplicação.
@@ -34,7 +33,7 @@ async def get_consumer_manager() -> ConsumerManager:
     que o loop de eventos correto seja capturado.
     """
     client = get_subscriber_client()
-    
+
     # Garante que usamos o loop que está rodando a aplicação (Uvicorn)
     try:
         loop = asyncio.get_running_loop()

@@ -1,6 +1,8 @@
 from collections.abc import Callable
 from typing import Any
 
+from loguru import logger
+
 from src.domain.entities.customer import Customer
 from src.domain.entities.message import Message
 from src.domain.value_objects.email import Email
@@ -40,7 +42,11 @@ class CreateCustomerHandler(
     ) -> None:
         """Sobrescreve o método base para
         gerenciar o ciclo de vida da sessão."""
+
+        logger.info(f"Worker received message. ID: {message.id}")
+
         input_data = self.extract_input(message, context)
-        async with self.uow_factory() as uow: 
-            use_case = self.usecase_factory(uow) 
+
+        async with self.uow_factory() as uow:
+            use_case = self.usecase_factory(uow)
             await use_case.execute(input_data)

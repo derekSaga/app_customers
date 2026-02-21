@@ -1,5 +1,7 @@
 from typing import Any
 
+from loguru import logger
+
 from src.domain.exceptions import CustomerAlreadyExistsError
 from src.usecases.ports.cor_handler_interface import IHandler
 from src.usecases.v1.customers.ports.customer_repositories import (
@@ -24,11 +26,16 @@ class RedisCheckHandler(IHandler[CustomerRegistrationContext]):
     async def handle(self, context: CustomerRegistrationContext) -> Any:
         email = context.dto.email
 
+        logger.info(f"Checking cache for email: {email}")
+
         # Verifica se já existe no cache
         if await self.cache.exists(email):
+            logger.warning(
+                f"Email {email} already exists in cache (Short-circuit)."
+            )
             raise CustomerAlreadyExistsError(email)
 
         # Cadastra no Redis (Lock temporário)
+        logger.info(f"Acquiring lock for email: {email}")
         await self.cache.set(email, "processing", expire=60)
-        # await self.cache.commit()
         return await super().handle(context)
