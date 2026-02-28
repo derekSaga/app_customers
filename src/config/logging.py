@@ -1,3 +1,10 @@
+"""
+This module configures the logging for the application using Loguru.
+
+It intercepts logs from the standard `logging` library to ensure consistent
+formatting across all libraries (e.g., Uvicorn, SQLAlchemy). It also
+injects a correlation ID into the logs if available.
+"""
 import logging
 import sys
 from types import FrameType
@@ -15,20 +22,26 @@ from src.config.settings import settings
 
 class InterceptHandler(logging.Handler):
     """
-    Intercepta logs da biblioteca padrão `logging` e
-    os redireciona para o `loguru`.
-    Isso garante que logs de bibliotecas
-    (como Uvicorn, SQLAlchemy) sejam formatados consistentemente.
+    Intercepts logs from the standard `logging` library and
+    redirects them to `loguru`.
+    This ensures that logs from libraries
+    (like Uvicorn, SQLAlchemy) are formatted consistently.
     """
 
     def emit(self, record: logging.LogRecord) -> None:
-        # Tenta obter o nível correspondente no Loguru
+        """
+        Emits a log record.
+
+        Args:
+            record: The log record to emit.
+        """
+        # Tries to get the corresponding level in Loguru
         try:
             level = logger.level(record.levelname).name
         except ValueError:
             level = str(record.levelno)
 
-        # Descobre a origem da chamada para manter a stack trace correta
+        # Finds the origin of the call to maintain the correct stack trace
         frame: FrameType | None = logging.currentframe()
         depth = 2
         while frame:
@@ -55,27 +68,36 @@ class InterceptHandler(logging.Handler):
 
 def configure_logging() -> None:
     """
-    Configura o Loguru e intercepta logs do sistema.
-    Deve ser chamado no início da execução (Main e Worker).
+    Configures Loguru and intercepts system logs.
+    Should be called at the beginning of execution (Main and Worker).
     """
-    # Define o nível de log (padrão INFO se não estiver nas settings)
+    # Sets the log level (defaults to INFO if not in settings)
     log_level = settings.LOG_LEVEL
 
-    # Remove handlers padrão do Loguru
+    # Removes default Loguru handlers
     logger.remove()
 
-    # Intercepta logs da raiz e define o nível
+    # Intercepts logs from the root and sets the level
     logging.root.handlers = [InterceptHandler()]
     logging.root.setLevel(log_level)
 
-    # Remove handlers de loggers existentes para evitar duplicação
-    # e garante que propaguem para o root (que é interceptado)
+    # Removes handlers from existing loggers to avoid duplication
+    # and ensures they propagate to the root (which is intercepted)
     for name in logging.root.manager.loggerDict.keys():
         logging.getLogger(name).handlers = []
         logging.getLogger(name).propagate = True
 
-    # Filtro para injetar Correlation ID (se disponível)
+    # Filter to inject Correlation ID (if available)
     def correlation_id_filter(record: "Record") -> bool:
+        """
+        Filter to inject the correlation ID into the log record.
+
+        Args:
+            record: The log record.
+
+        Returns:
+            True if the record should be logged, False otherwise.
+        """
         cid = correlation_id.get()
         record["extra"]["correlation_id"] = cid if cid else "N/A"
         return True

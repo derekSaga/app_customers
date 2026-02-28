@@ -1,11 +1,19 @@
+"""
+This module defines custom exceptions for the domain layer.
+
+These exceptions represent business rule violations and other
+domain-specific errors.
+"""
+
+
 class DomainError(Exception):
-    """Exceção base para erros de domínio."""
+    """Base exception for domain errors."""
 
     pass
 
 
 class CustomerAlreadyExistsError(DomainError):
-    """Lançado quando tenta-se registrar um cliente que já existe."""
+    """Raised when trying to register a customer that already exists."""
 
     def __init__(self, email: str):
-        super().__init__(f"Cliente com email '{email}' já existe.")
+        super().__init__(f"Customer with email '{email}' already exists.")

@@ -1,3 +1,10 @@
+"""
+This module provides a concrete implementation of the `BasePublisher` for
+Google Cloud Pub/Sub.
+
+It manages the bridge between the synchronous Google library and the
+asynchronous event loop.
+"""
 import asyncio
 import uuid
 from concurrent.futures import Future
@@ -17,8 +24,10 @@ from src.config.settings import settings
 
 class PubSubPublisher(BasePublisher[Any]):
     """
-    Implementação do Publisher utilizando Google Cloud Pub/Sub.
-    Gerencia a ponte entre a biblioteca síncrona do Google e o loop assíncrono.
+    Publisher implementation using Google Cloud Pub/Sub.
+
+    Manages the bridge between the synchronous Google library and the
+    asynchronous event loop.
     """
 
     def __init__(
@@ -26,21 +35,38 @@ class PubSubPublisher(BasePublisher[Any]):
         pubsub_client: PublisherClient,
         project_id: str = settings.PUBSUB_PROJECT_ID,
     ) -> None:
+        """
+        Initializes the publisher with a Pub/Sub client and project ID.
+
+        Args:
+            pubsub_client: The Pub/Sub client.
+            project_id: The Google Cloud project ID.
+        """
         self.pubsub_client = pubsub_client
         self.project_id = project_id
         self.publish_timeout = 10.0
 
     def _get_correlation_id(self) -> str:
-        """Sobrescreve para pegar do contexto ASGI."""
+        """
+        Overrides to get the correlation ID from the ASGI context.
+
+        Returns:
+            The correlation ID.
+        """
         return correlation_id.get() or str(uuid.uuid4())
 
     async def send_message(
         self, destination: str, body: str, attributes: dict[str, str]
     ) -> None:
         """
-        Envia a mensagem para o tópico do Pub/Sub e aguarda a confirmação.
+        Sends the message to the Pub/Sub topic and waits for confirmation.
+
+        Args:
+            destination: The destination topic.
+            body: The message body.
+            attributes: The message attributes.
         """
-        # Verifica se o destination já é um caminho completo ou apenas o ID
+        # Checks if the destination is a full path or just the ID
         if "/" in destination:
             topic_path = destination
         else:
@@ -52,13 +78,19 @@ class PubSubPublisher(BasePublisher[Any]):
         aio_future = loop.create_future()
 
         def callback(pubsub_future: Future[str]) -> None:
+            """
+            Callback to bridge the Pub/Sub future with the asyncio future.
+
+            Args:
+                pubsub_future: The future from the Pub/Sub library.
+            """
             try:
                 result = pubsub_future.result()
                 loop.call_soon_threadsafe(aio_future.set_result, result)
             except Exception as e:
                 loop.call_soon_threadsafe(aio_future.set_exception, e)
 
-        # Publica a mensagem no Pub/Sub
+        # Publishes the message to Pub/Sub
         publish_future = self.pubsub_client.publish(
             topic_path, body.encode("utf-8"), **attributes
         )

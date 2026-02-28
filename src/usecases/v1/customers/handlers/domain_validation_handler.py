@@ -1,3 +1,11 @@
+"""
+This module defines the `DomainValidationHandler`, which is a handler in
+the Chain of Responsibility for creating a customer.
+
+This handler is responsible for validating the domain, which includes
+checking for email uniqueness and creating a `Customer` entity. It uses the
+`CustomerRegistrationService` to perform the validation.
+"""
 from datetime import datetime
 from typing import Any
 from uuid import uuid4
@@ -14,24 +22,41 @@ from src.usecases.v1.schemas.base.customer_registration_context import (
 
 
 class DomainValidationHandler(IHandler[CustomerRegistrationContext]):
-    """2. Verifica no Banco (Source of Truth) e Cria Entidade via Service."""
+    """2. Checks in the Database (Source of Truth) and Creates Entity via
+    Service."""
 
     def __init__(
         self,
         service: CustomerRegistrationService,
         next_handler: IHandler[CustomerRegistrationContext] | None = None,
     ):
+        """
+        Initializes the handler with a customer registration service.
+
+        Args:
+            service: The customer registration service.
+            next_handler: The next handler in the chain.
+        """
         super().__init__(next_handler)
         self.service = service
 
     async def handle(self, context: CustomerRegistrationContext) -> Any:
+        """
+        Handles the domain validation.
+
+        Args:
+            context: The customer registration context.
+
+        Returns:
+            The result of the next handler.
+        """
         email_vo = Email(context.dto.email)
 
         logger.info(f"Validating email availability in DB: {email_vo}")
-        # O Service verifica no banco (Source of Truth)
+        # The Service checks in the database (Source of Truth)
         await self.service.validate_email_availability(email_vo)
 
-        # Cria a entidade
+        # Creates the entity
         now = datetime.now()
         customer_id = uuid4()
         customer = Customer(
@@ -46,6 +71,6 @@ class DomainValidationHandler(IHandler[CustomerRegistrationContext]):
             f"Domain validation passed. Generated Customer ID: {customer.id}"
         )
 
-        # Passa a entidade criada para o próximo passo
+        # Passes the created entity to the next step
         context.customer = customer
         return await super().handle(context)

@@ -1,3 +1,17 @@
+"""
+This module defines the interfaces (ports) for persistence and caching.
+
+`IRepository` defines the contract for a generic repository, including
+methods for adding, updating, getting, deleting, searching, and listing
+entities.
+
+`ICacheRepository` defines the contract for a generic cache, including
+methods for getting, checking existence, setting, and deleting cache
+entries.
+
+Both interfaces inherit from `IUnitOfWork`, which means that they are
+expected to manage the transaction lifecycle.
+"""
 from abc import ABC, abstractmethod
 from typing import Any
 from uuid import UUID
@@ -6,9 +20,9 @@ from src.usecases.ports.unit_of_work_interface import IUnitOfWork
 
 
 class IRepository[TInput, TResponse](IUnitOfWork, ABC):
-    """Interface (port) para persistência."""
+    """Interface (port) for persistence."""
 
-    # O uso de TInput aqui como parâmetro exige contravariância
+    # The use of TInput here as a parameter requires contravariance
     @abstractmethod
     async def add(self, entity: TInput) -> TResponse: ...
 
@@ -29,7 +43,7 @@ class IRepository[TInput, TResponse](IUnitOfWork, ABC):
 
 
 class ICacheRepository[TInput, TResponse](IUnitOfWork, ABC):
-    """Interface (port) para cache."""
+    """Interface (port) for cache."""
 
     @abstractmethod
     async def get(self, key: str) -> TResponse | None: ...

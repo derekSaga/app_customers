@@ -1,10 +1,17 @@
+"""
+This module defines the `IUsecase` interface, which is a base interface for
+use cases.
+
+It defines the contract that all use cases must follow, ensuring that they
+can be executed in a consistent way.
+"""
 from abc import ABC, abstractmethod
 
 
 class IUsecase[TInput, TOutput](ABC):
-    """Interface base para Casos de Uso (Use Cases)."""
+    """Base interface for Use Cases."""
 
     @abstractmethod
     async def execute(self, input_data: TInput) -> TOutput:
-        """Executa a lógica de negócio do caso de uso."""
+        """Executes the business logic of the use case."""
         ...

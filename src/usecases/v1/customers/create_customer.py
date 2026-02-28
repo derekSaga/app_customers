@@ -1,3 +1,13 @@
+"""
+This module defines the use cases for creating a customer.
+
+`InitiateCustomerCreation` orchestrates the Chain of Responsibility for
+initiating customer creation, which includes checking Redis, validating the
+domain, and publishing a message.
+
+`CustomerCreateUseCase` is responsible for persisting the customer to the
+database.
+"""
 from __future__ import annotations
 
 from loguru import logger
@@ -25,8 +35,9 @@ from src.usecases.v1.schemas.base.customer_registration_context import (
 
 class InitiateCustomerCreation(IUsecase[CustomerCreate, CustomerRead]):
     """
-    Caso de Uso: Iniciar Criação de Cliente.
-    Orquestra o Chain of Responsibility.
+    Use Case: Initiate Customer Creation.
+
+    Orchestrates the Chain of Responsibility.
     """
 
     def __init__(
@@ -36,7 +47,16 @@ class InitiateCustomerCreation(IUsecase[CustomerCreate, CustomerRead]):
         service: CustomerRegistrationService,
         repository: IDBCustomerRepository,
     ):
-        # Montagem da Chain
+        """
+        Initializes the use case with its dependencies.
+
+        Args:
+            cache: The cache for customer control.
+            publisher: The message publisher.
+            service: The customer registration service.
+            repository: The database repository.
+        """
+        # Chain setup
         # Redis -> Domain (Service) -> Publish
         self.cache = cache
         self.publisher = publisher
@@ -44,6 +64,15 @@ class InitiateCustomerCreation(IUsecase[CustomerCreate, CustomerRead]):
         self.repository = repository
 
     async def execute(self, input_data: CustomerCreate) -> CustomerRead:
+        """
+        Executes the use case.
+
+        Args:
+            input_data: The customer creation data.
+
+        Returns:
+            The created customer data.
+        """
         logger.info(
             f"Initiating customer creation flow for email: {input_data.email}"
         )
@@ -66,13 +95,30 @@ class InitiateCustomerCreation(IUsecase[CustomerCreate, CustomerRead]):
 
 
 class CustomerCreateUseCase(IUsecase[Customer, CustomerRead]):
+    """Use Case for creating a customer."""
+
     def __init__(
         self,
         repository: IDBCustomerRepository,
     ):
+        """
+        Initializes the use case with its dependencies.
+
+        Args:
+            repository: The database repository.
+        """
         self.repository = repository
 
     async def execute(self, input_data: Customer) -> CustomerRead:
+        """
+        Executes the use case.
+
+        Args:
+            input_data: The customer data.
+
+        Returns:
+            The created customer data.
+        """
         logger.info(f"Persisting customer {input_data.id} to database.")
         created_customer = await self.repository.add(input_data)
         logger.info(f"Customer {created_customer.id} persisted successfully.")

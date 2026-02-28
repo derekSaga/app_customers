@@ -1,26 +1,37 @@
+"""
+This script initializes Pub/Sub topics and subscriptions 
+based on the project's settings.
+
+It creates main topics, their corresponding subscriptions, 
+and also sets up Dead
+Letter Queues (DLQs) for each topic to handle message delivery failures.
+This setup is crucial for ensuring that messages 
+are not lost and can be debugged
+if they fail to be processed after multiple retries.
+"""
 import os
 
 from google.api_core.exceptions import AlreadyExists
 from google.cloud import pubsub_v1
 from loguru import logger
 
-# Tenta importar settings, fallback para variáveis de ambiente ou defaults
+# Try to import settings, fallback to environment variables or defaults
 try:
     from src.config.settings import settings
 
     PROJECT_ID = settings.PUBSUB_PROJECT_ID
 
-    # Defina aqui a lista de tópicos baseada nas settings ou strings diretas
+    # Define the list of topics here based on settings or direct strings
     TOPICS_CONFIG = [
         {
             "topic": settings.CUSTOMER_CREATE_TOPIC,
             "subscription": settings.CUSTOMER_CREATE_TOPIC_SUBSCRIPTION,
         },
-        # Adicione novos tópicos aqui:
+        # Add new topics here:
         # {"topic": "order-created", "subscription": "order-created-sub"},
     ]
 except ImportError:
-    PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", "seu-projeto-gcp")
+    PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", "your-gcp-project")
     TOPICS_CONFIG = [
         {"topic": "customer-created", "subscription": "customer-created-sub"}
     ]
@@ -29,12 +40,12 @@ except ImportError:
 def create_topic(
     publisher: pubsub_v1.PublisherClient, topic_path: str
 ) -> None:
-    """Cria um tópico se não existir."""
+    """Creates a topic if it doesn't exist."""
     try:
         publisher.create_topic(request={"name": topic_path})
-        logger.info(f"Tópico criado: {topic_path}")
+        logger.info(f"Topic created: {topic_path}")
     except AlreadyExists:
-        logger.warning(f"Tópico já existe: {topic_path}")
+        logger.warning(f"Topic already exists: {topic_path}")
 
 
 def create_subscription(
@@ -43,7 +54,7 @@ def create_subscription(
     topic_path: str,
     dead_letter_policy: dict[str, str] | None = None,
 ) -> None:
-    """Cria uma subscription se não existir."""
+    """Creates a subscription if it doesn't exist."""
     try:
         request = {
             "name": subscription_path,
@@ -55,11 +66,11 @@ def create_subscription(
             request["dead_letter_policy"] = dead_letter_policy
 
         subscriber.create_subscription(request=request)
-        logger.info(f"Subscription criada: {subscription_path}")
+        logger.info(f"Subscription created: {subscription_path}")
     except AlreadyExists:
-        logger.warning(f"Subscription já existe: {subscription_path}")
+        logger.warning(f"Subscription already exists: {subscription_path}")
 
-        # Opcional: Atualizar a política de DLQ se a subscription já existir
+        # Optional: Update DLQ policy if subscription already exists
         if dead_letter_policy:
             update_request = {
                 "subscription": {
@@ -71,11 +82,11 @@ def create_subscription(
             try:
                 subscriber.update_subscription(request=update_request)
                 logger.info(
-                    "Subscription atualizada com "
+                    "Subscription updated with "
                     f"DLQ policy: {subscription_path}"
                 )
             except Exception as e:
-                logger.error(f"Erro ao atualizar subscription existente: {e}")
+                logger.error(f"Error updating existing subscription: {e}")
 
 
 def setup_topic_resources(
@@ -83,34 +94,33 @@ def setup_topic_resources(
     subscriber: pubsub_v1.SubscriberClient,
     config: dict[str, str],
 ) -> None:
-    """Configura Tópico, Subscription e DLQ para
-    uma entrada de configuração."""
+    """Configures Topic, Subscription and DLQ for a configuration entry."""
     topic_name = config["topic"]
     sub_name = config["subscription"]
 
-    # Nomes DLQ
+    # DLQ names
     dlq_topic_name = f"{topic_name}-dlq"
     dlq_sub_name = f"{sub_name}-dlq"
 
-    # Caminhos completos
+    # Full paths
     main_topic_path = publisher.topic_path(PROJECT_ID, topic_name)
     main_sub_path = subscriber.subscription_path(PROJECT_ID, sub_name)
 
     dlq_topic_path = publisher.topic_path(PROJECT_ID, dlq_topic_name)
     dlq_sub_path = subscriber.subscription_path(PROJECT_ID, dlq_sub_name)
 
-    # 1. Criar Tópico DLQ
+    # 1. Create DLQ Topic
     create_topic(publisher, dlq_topic_path)
 
-    # 2. Criar Subscription da DLQ
-    # DLQs geralmente não têm outra DLQ, então sem policy aqui.
+    # 2. Create DLQ Subscription
+    # DLQs usually don't have another DLQ, so no policy here.
     create_subscription(subscriber, dlq_sub_path, dlq_topic_path)
 
-    # 3. Criar Tópico Principal
+    # 3. Create Main Topic
     create_topic(publisher, main_topic_path)
 
-    # 4. Criar Subscription Principal apontando para a DLQ
-    # Configura para enviar para a DLQ após 5 tentativas falhas
+    # 4. Create Main Subscription pointing to the DLQ
+    # Configure to send to DLQ after 5 failed attempts
     dlq_policy = {
         "dead_letter_topic": dlq_topic_path,
         "max_delivery_attempts": 5,
@@ -125,8 +135,8 @@ def setup_topic_resources(
 
 
 def init_pubsub() -> None:
-    """Orquestra a criação dos recursos do Pub/Sub."""
-    logger.info(f"Iniciando configuração do Pub/Sub no projeto: {PROJECT_ID}")
+    """Orchestrates the creation of Pub/Sub resources."""
+    logger.info(f"Starting Pub/Sub configuration in project: {PROJECT_ID}")
 
     publisher = pubsub_v1.PublisherClient()
     subscriber = pubsub_v1.SubscriberClient()
@@ -134,9 +144,9 @@ def init_pubsub() -> None:
     for config in TOPICS_CONFIG:
         setup_topic_resources(publisher, subscriber, config)
 
-    logger.success("Configuração do Pub/Sub concluída!")
+    logger.success("Pub/Sub configuration complete!")
 
 
 if __name__ == "__main__":
-    # Garante que as variáveis de ambiente estejam carregadas se necessário
+    # Ensures that environment variables are loaded if necessary
     init_pubsub()

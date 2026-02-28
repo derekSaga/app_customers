@@ -1,3 +1,11 @@
+"""
+This module defines the `CustomerModel`, which is the SQLAlchemy ORM model
+for the `Customer` entity.
+
+It maps the `Customer` entity to the `customers` table in the database and
+provides methods for converting between the domain entity and the
+persistence model.
+"""
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -7,6 +15,8 @@ from src.domain.value_objects.email import Email
 
 
 class CustomerModel(Base):
+    """The SQLAlchemy ORM model for the `Customer` entity."""
+
     __tablename__ = "customers"
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -15,8 +25,8 @@ class CustomerModel(Base):
     )
 
     def to_entity(self) -> Customer:
-        """Converte o modelo de persistência para a entidade de domínio."""
-        # Assumindo que o construtor do Customer aceita id, name e o VO Email
+        """Converts the persistence model to the domain entity."""
+        # Assuming the Customer constructor accepts id, name, and the Email VO
         return Customer(
             id=self.id,
             name=self.name,
@@ -27,8 +37,8 @@ class CustomerModel(Base):
 
     @staticmethod
     def from_entity(customer: Customer) -> "CustomerModel":
-        """Converte a entidade de domínio para o modelo de persistência."""
-        # Extrai o valor string do VO Email
+        """Converts the domain entity to the persistence model."""
+        # Extracts the string value from the Email VO
         email_str = (
             customer.email.value
             if isinstance(customer.email, Email)
@@ -47,4 +57,5 @@ class CustomerModel(Base):
         return model
 
     def __repr__(self) -> str:
+        """Returns a string representation of the model."""
         return f"<CustomerModel(id={self.id}, email='{self.email}')>"

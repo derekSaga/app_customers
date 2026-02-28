@@ -1,3 +1,10 @@
+"""
+Dependency Injection for Message Consumers.
+
+This module provides factory functions to create and configure all message
+consumers and their dependencies, such as the Pub/Sub client and the
+consumer manager.
+"""
 import asyncio
 import functools
 
@@ -20,26 +27,38 @@ from src.di.v1.get_create_customer_uc import (
 @functools.lru_cache
 def get_subscriber_client() -> SubscriberClient:
     """
-    Retorna uma instância singleton do cliente Subscriber.
-    Útil para reutilizar conexões gRPC entre múltiplos consumidores.
+    Returns a singleton instance of the Pub/Sub SubscriberClient.
+
+    This function is cached to ensure that the same client instance is
+    reused across the application, which is useful for sharing gRPC
+    connections between multiple consumers.
+
+    Returns:
+        A singleton `SubscriberClient` instance.
     """
     return SubscriberClient()
 
 
 async def get_consumer_manager() -> ConsumerManager:
     """
-    Factory para criar e agrupar todos os consumidores da aplicação.
-    Deve ser chamado durante a inicialização (startup) para garantir
-    que o loop de eventos correto seja capturado.
+    Factory to create and assemble all message consumers for the application.
+
+    This function should be called during application startup to ensure that
+    the correct event loop is captured and used by the consumers. It
+    instantiates each consumer with its specific handler and dependencies.
+
+    Returns:
+        A `ConsumerManager` instance containing all configured consumers.
     """
     client = get_subscriber_client()
 
-    # Garante que usamos o loop que está rodando a aplicação (Uvicorn)
+    # Ensure we use the currently running event loop (e.g., from Uvicorn)
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:
         loop = asyncio.get_event_loop()
-    # Consumidor 1: Exemplo de criação de clientes
+
+    # Consumer 1: Handles customer creation messages
     create_customer_consumer = PubSubConsumer(
         subscription_id=settings.CUSTOMER_CREATE_TOPIC_SUBSCRIPTION,
         handler=CreateCustomerHandler(

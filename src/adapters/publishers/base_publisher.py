@@ -1,3 +1,8 @@
+"""
+This module defines the abstract base class for message publishers.
+
+It standardizes the message format (Envelope) and serialization.
+"""
 import json
 import uuid
 from abc import ABC, abstractmethod
@@ -13,12 +18,18 @@ T = TypeVar("T")
 
 class BasePublisher[T](ABC):
     """
-    Classe base abstrata para publicação de mensagens.
-    Padroniza o formato da mensagem (Envelope) e a serialização.
+    Abstract base class for publishing messages.
+
+    Standardizes the message format (Envelope) and serialization.
     """
 
     def _get_correlation_id(self) -> str:
-        """Hook para obter correlation_id (pode ser sobrescrito)."""
+        """
+        Hook to get the correlation_id (can be overridden).
+
+        Returns:
+            A new correlation ID.
+        """
         return str(uuid.uuid4())
 
     @abstractmethod
@@ -26,14 +37,14 @@ class BasePublisher[T](ABC):
         self, destination: str, body: str, attributes: dict[str, str]
     ) -> None:
         """
-        Método abstrato que deve ser implementado pelo
-        adapter concreto (ex: RabbitMQ, Kafka).
-        Responsável pelo transporte da mensagem serializada.
+        Abstract method that must be implemented by the concrete adapter.
+
+        Responsible for transporting the serialized message.
 
         Args:
-            destination: O destino da mensagem (fila, tópico, routing key).
-            body: O conteúdo da mensagem já serializado em JSON.
-            attributes: Metadados de transporte (headers).
+            destination: The message destination (queue, topic, routing key).
+            body: The message content already serialized in JSON.
+            attributes: Transport metadata (headers).
         """
         ...
 
@@ -45,17 +56,18 @@ class BasePublisher[T](ABC):
         correlation_id: str | None = None,
     ) -> None:
         """
-        Constrói o envelope da mensagem e a publica no destino especificado.
+        Builds the message envelope and publishes it to the specified
+        destination.
 
         Args:
-            destination: O destino da mensagem.
-            payload: O conteúdo da mensagem (dados do domínio).
-            event_type: O tipo do evento (ex: com.empresa.customer.created).
-            correlation_id: ID de correlação opcional para rastreamento.
+            destination: The message destination.
+            payload: The message content (domain data).
+            event_type: The event type (e.g., com.company.customer.created).
+            correlation_id: Optional correlation ID for tracking.
         """
         cid = correlation_id or self._get_correlation_id()
 
-        # 1. Construir o CloudEvent
+        # 1. Build the CloudEvent
         message = Message(
             data=payload,
             type=event_type,
@@ -63,7 +75,7 @@ class BasePublisher[T](ABC):
             correlation_id=cid,
         )
 
-        # 2. Preparar atributos de transporte (Protocol Binding)
+        # 2. Prepare transport attributes (Protocol Binding)
         attributes = {
             "correlation_id": cid,
             "ce-type": event_type,
@@ -71,16 +83,24 @@ class BasePublisher[T](ABC):
             "ce-id": message.id,
         }
 
-        # 3. Serializar para JSON (Structured Mode)
+        # 3. Serialize to JSON (Structured Mode)
         body = json.dumps(asdict(message), default=self._json_serializer)
 
-        # 4. Enviar com atributos
+        # 4. Send with attributes
         await self.send_message(destination, body, attributes)
 
     @staticmethod
     def _json_serializer(obj: Any) -> Any:
-        """Helper para serializar tipos comuns não
-        suportados nativamente pelo json.dumps."""
+        """
+        Helper for serializing common types not natively supported by
+        json.dumps.
+
+        Args:
+            obj: The object to serialize.
+
+        Returns:
+            A serializable representation of the object.
+        """
         if isinstance(obj, (datetime,)):
             return obj.isoformat()
         if isinstance(obj, (UUID,)):
